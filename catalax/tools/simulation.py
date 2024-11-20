@@ -1,8 +1,10 @@
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Union
 
 import equinox as eqx
 import jax
 import jax.numpy as jnp
+from brainunit import Quantity
+import brainunit as u
 
 from diffrax import (
     AbstractSolver,
@@ -56,7 +58,7 @@ class Simulation(BaseModel):
     odes: List[ODE]
     parameters: List[str]
     stoich_mat: jax.Array
-    dt0: float = 0.1
+    dt0: Union[float, Quantity] = 0.1 * u.second
     solver: Any = Tsit5
     rtol: float = 1e-5
     atol: float = 1e-5
@@ -74,7 +76,7 @@ class Simulation(BaseModel):
             sol = diffeqsolve(
                 terms=ODETerm(stack),  # type: ignore
                 solver=self.solver(),  # type: ignore
-                t0=0,
+                t0=0 * u.second,
                 t1=time[-1],
                 dt0=self.dt0,  # type: ignore
                 y0=y0,

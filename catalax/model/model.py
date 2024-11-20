@@ -9,6 +9,7 @@ from diffrax import ODETerm, SaveAt, Tsit5
 from dotted_dict import DottedDict
 from pydantic import Field, PrivateAttr, validator
 from sympy import Expr, Matrix, Symbol, symbols, sympify
+from brainunit import math as bm
 
 from catalax.model.base import CatalaxBase
 from catalax.mcmc import priors
@@ -273,7 +274,7 @@ class Model(CatalaxBase):
 
         # Setup save points
         if nsteps is not None:
-            saveat = jnp.linspace(t0, t1, nsteps)  # type: ignore
+            saveat = bm.linspace(t0, t1, nsteps)  # type: ignore
             t0 = saveat[0]  # type: ignore
             t1 = saveat[-1]  # type: ignore
         elif saveat is None:
@@ -319,8 +320,8 @@ class Model(CatalaxBase):
                 f"So far stoichioemtry matrix construction is exclusive to ODE models and not implemented yet."
             )
 
-        stoich_mat = jnp.zeros((len(self.odes), len(self.odes)))
-        diag_indices = jnp.diag_indices_from(stoich_mat)
+        stoich_mat = bm.zeros((len(self.odes), len(self.odes)))
+        diag_indices = bm.diag_indices_from(stoich_mat)
 
         return stoich_mat.at[diag_indices].set(1)
 
@@ -373,7 +374,7 @@ class Model(CatalaxBase):
         if parameters is not None:
             return parameters
 
-        return jnp.array([self.parameters[param].value for param in self._get_parameter_order()])  # type: ignore
+        return [self.parameters[param].value for param in self._get_parameter_order()]  # type: ignore
 
     def _get_parameter_order(self) -> List[str]:
         """Returns the order of the parameters in the model"""
@@ -399,7 +400,7 @@ class Model(CatalaxBase):
             )
 
         if in_axes is not None and len(initial_conditions) > 1:
-            return jnp.stack(
+            return bm.stack(
                 [df_inits[s].values for s in self._get_species_order()], axis=-1  # type: ignore
             )
         elif in_axes and len(initial_conditions) > 1:
@@ -407,7 +408,7 @@ class Model(CatalaxBase):
                 "If in_axes is set to None, only one initial condition can be specified."
             )
 
-        return jnp.array(
+        return bm.array(
             [initial_conditions[0][species] for species in self._get_species_order()]
         )
 
@@ -426,11 +427,11 @@ class Model(CatalaxBase):
         y0_axis, parameters_axis, saveat_axis = in_axes
 
         if y0_axis is not None:
-            y0 = jnp.expand_dims(y0[0, :], axis=0)
+            y0 = bm.expand_dims(y0[0, :], axis=0)
         if parameters_axis is not None:
-            parameters = jnp.expand_dims(parameters[0, :], axis=0)
+            parameters = bm.expand_dims(parameters[0, :], axis=0)
         if saveat_axis is not None:
-            saveat = jnp.expand_dims(saveat[0, :], axis=0)
+            saveat = bm.expand_dims(saveat[0, :], axis=0)
 
         self._sim_func(y0, parameters, saveat)
 
@@ -575,7 +576,7 @@ class Model(CatalaxBase):
         """
 
         if len(y0_array.shape) == 1:
-            y0_array = jnp.expand_dims(y0_array, axis=0)
+            y0_array = bm.expand_dims(y0_array, axis=0)
 
         assert y0_array.shape[-1] == len(
             self.species
@@ -667,7 +668,7 @@ class Model(CatalaxBase):
         residual = states[..., observables] - data
         chisqr = (residual**2).sum()
         ndata = len(residual.ravel())
-        _neg2_log_likel = ndata * jnp.log(chisqr / ndata)
+        _neg2_log_likel = ndata * bm.log(chisqr / ndata)
         aic = _neg2_log_likel + 2 * len(self.parameters)
 
         return aic

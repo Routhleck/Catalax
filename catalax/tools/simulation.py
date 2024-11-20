@@ -67,14 +67,17 @@ class Simulation(BaseModel):
 
     _simulation_func = PrivateAttr(default=None)
 
-    def _prepare_func(self, in_axes=None):
+    def _prepare_func(self, in_axes=None, term=None):
         """Applies all the necessary transformations to the term and prepares the simulation function"""
 
-        stack = Stack(parameters=self.parameters, odes=self.odes)
+        if term is None:
+            f = Stack(parameters=self.parameters, odes=self.odes)
+        else:
+            f = term
 
         def _simulate_system(y0, parameters, time):
             sol = diffeqsolve(
-                terms=ODETerm(stack),  # type: ignore
+                terms=ODETerm(f),  # type: ignore
                 solver=self.solver(),  # type: ignore
                 t0=0 * u.second,
                 t1=time[-1],

@@ -10,6 +10,7 @@ from dotted_dict import DottedDict
 from pydantic import Field, PrivateAttr, validator
 from sympy import Expr, Matrix, Symbol, symbols, sympify
 from brainunit import math as bm
+from brainunit import Quantity
 
 from catalax.model.base import CatalaxBase
 from catalax.mcmc import priors
@@ -56,7 +57,7 @@ class Model(CatalaxBase):
     odes: Dict[str, ODE] = Field(default_factory=DottedDict)
     species: Dict[str, Species] = Field(default_factory=PrettyDict)
     parameters: Dict[str, Parameter] = Field(default_factory=PrettyDict)
-    term: Optional[ODETerm] = Field(default=None)
+    term: Optional[Callable] = Field(default=None)
 
     _sim_func: Optional[Callable] = PrivateAttr(default=None)
     _in_axes: Optional[Tuple] = PrivateAttr(default=None)
@@ -164,6 +165,15 @@ class Model(CatalaxBase):
             check_symbol(symbol)
             self.species[symbol] = Species(name=name, symbol=Symbol(symbol))
 
+    def add_term(self, term: Callable):
+        """Adds a term to the model.
+
+        Args:
+            term (Callable): The term to add to the model.
+        """
+
+        self.term = term
+
     @staticmethod
     def _split_species_string(species_string: str) -> List[Symbol]:
         """Helper method to split a string of species into a list of species"""
@@ -216,7 +226,7 @@ class Model(CatalaxBase):
 
     def simulate(
         self,
-        initial_conditions: List[Dict[str, float]],
+        initial_conditions: List[Dict[str, Union[float, Quantity]]],
         dt0: float = 0.1,
         solver=Tsit5,
         t0: Optional[int] = None,
@@ -359,7 +369,7 @@ class Model(CatalaxBase):
             **kwargs,
         )
 
-        self._sim_func = simulation_setup._prepare_func(in_axes=in_axes)
+        self._sim_func = simulation_setup._prepare_func(in_axes=in_axes, term=self.term)
 
     def _get_parameters(self, parameters: Optional[jax.Array] = None) -> jax.Array:
         """Gets all the parameters for the model"""
@@ -385,9 +395,10 @@ class Model(CatalaxBase):
         return sorted(self.species.keys())
 
     def _assemble_y0_array(
-        self, initial_conditions: List[Dict[str, float]], in_axes: Tuple
+        self, initial_conditions: List[Dict[str, Union[float, Quantity]]], in_axes: Tuple
     ) -> jax.Array:
         """Assembles the initial conditions into an array"""
+        # TODO: compat with Quantity
 
         # Turn initial conditions dict into a dataframe
         df_inits = pd.DataFrame(initial_conditions)

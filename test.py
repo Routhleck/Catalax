@@ -7,15 +7,23 @@ import brainunit as u
 # Initialize the model
 model = ctx.Model(name="Simple menten model")
 
+def f(t, y, args):
+    v_max, K_m = args
+    s1 = y * (u.second / u.litre)
+    d_s1 = - (v_max * s1) / (K_m + s1)
+    return d_s1 / u.ms
+
+model.add_term(f)
+
 # Add species
 model.add_species("s1")
-
+#
 # Add ODEs
 model.add_ode("s1", "- (v_max * s1) / ( K_m + s1)")
 
 # Prepare the model for bayes and define priors 
 print(type(model.parameters.v_max.value))
-model.parameters.v_max.value = 7.0 * (u.mol / u.second)
+model.parameters.v_max.value = 7.0 * u.katal
 model.parameters.K_m.value = 100.0 * (u.mol / u.litre)
 
 
@@ -37,11 +45,13 @@ initial_conditions = []
 
 for _ in range(n_ds):
     initial_conditions += [
-        {"s1": np.random.normal(300.0, 8.0)},
-        {"s1": np.random.normal(200.0, 8.0)},
-        {"s1": np.random.normal(80.0, 8.0)},
-        {"s1": np.random.normal(50.0, 8.0)},
+        {"s1": np.random.normal(300.0, 8.0) * u.katal},
+        {"s1": np.random.normal(200.0, 8.0) * u.katal},
+        {"s1": np.random.normal(80.0, 8.0) * u.katal},
+        {"s1": np.random.normal(50.0, 8.0) * u.katal},
     ]
+
+
 
 time, data = model.simulate(
     initial_conditions=initial_conditions,

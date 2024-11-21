@@ -8,23 +8,23 @@ import brainunit as u
 model = ctx.Model(name="Simple menten model")
 
 def f(t, y, args):
-    v_max, K_m = args
-    s1 = y * (u.second / u.litre)
+    K_m, v_max  = args
+    s1 = y * (u.molar / u.katal)
     d_s1 = - (v_max * s1) / (K_m + s1)
-    return d_s1 / u.ms
+    return d_s1 / u.second
 
+# Add term
 model.add_term(f)
 
 # Add species
 model.add_species("s1")
-#
+
 # Add ODEs
 model.add_ode("s1", "- (v_max * s1) / ( K_m + s1)")
 
 # Prepare the model for bayes and define priors 
-print(type(model.parameters.v_max.value))
 model.parameters.v_max.value = 7.0 * u.katal
-model.parameters.K_m.value = 100.0 * (u.mol / u.litre)
+model.parameters.K_m.value = 100.0 * u.molar
 
 
 # Data is sampled at different time points
@@ -39,7 +39,7 @@ time = jnp.array([
     [23, 41, 68, 86, 110, 120],]*n_ds
 ]) * u.second
 
-# Set initial conditions above and below the
+# Set initial conditions above and below the 
 # true Km value for the sake of the example
 initial_conditions = []
 
@@ -51,25 +51,25 @@ for _ in range(n_ds):
         {"s1": np.random.normal(50.0, 8.0) * u.katal},
     ]
 
-
-
 time, data = model.simulate(
     initial_conditions=initial_conditions,
     dt0=0.1 * u.second, saveat=time, in_axes=(0, None, 0)
 )
 
 # Add some noise for realism
-data = np.random.normal(data, 1.0).clip(min=0)
+data = np.random.normal(data.to_decimal(u.katal), 1.0).clip(min=0) * u.katal
 
 # Turn intiial conditions into a matrix (Not yet part of the NeuralODE workflow)
 y0s = model._assemble_y0_array(initial_conditions, in_axes=(0, None, None))
 
-# Save the data
-jnp.save("data/time.npy", time)
-jnp.save("data/data.npy", data)
-jnp.save("data/y0s.npy", y0s)
-
-with open("./data/initial_conditions.json", "w") as f:
-    json.dump(initial_conditions, f, indent=2)
 
 print(f"Time: {time.shape} | Data: {data.shape} | Initial Conditions: {y0s.shape}")
+
+# Visualize the data
+f = ctx.visualize(
+    model=model,
+    data=data[:4],
+    times=time[:4],
+    initial_conditions=initial_conditions[:4],
+    figsize=(4,2),
+)

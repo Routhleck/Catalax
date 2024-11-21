@@ -29,6 +29,7 @@ import jax.numpy as jnp
 import jax.scipy as jsp
 import sympy
 from brainunit import math as bm
+from brainunit import linalg as bulinalg
 
 
 PyTree = Any
@@ -96,7 +97,7 @@ _lookup = {
     sympy.Min: _reduce(bm.minimum),
     sympy.MatAdd: _reduce(bm.add),
     sympy.Trace: bm.trace,
-    sympy.Determinant: bm.det,
+    sympy.Determinant: bulinalg.det,
 }
 
 _reverse_lookup = {v: k for k, v in _lookup.items()}

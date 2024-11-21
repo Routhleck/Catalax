@@ -403,6 +403,11 @@ class Model(CatalaxBase):
         # Turn initial conditions dict into a dataframe
         df_inits = pd.DataFrame(initial_conditions)
 
+        y0_list = [
+            [condition[species] for species in self._get_species_order()]
+            for condition in initial_conditions
+        ]
+
         # Check whether all species have initial conditions and
         # if there are more than in the model
         if not all(species in self.species.keys() for species in df_inits.columns):
@@ -411,17 +416,13 @@ class Model(CatalaxBase):
             )
 
         if in_axes is not None and len(initial_conditions) > 1:
-            return bm.stack(
-                [df_inits[s].values for s in self._get_species_order()], axis=-1  # type: ignore
-            )
+            return bm.asarray(y0_list)
         elif in_axes and len(initial_conditions) > 1:
             raise ValueError(
                 "If in_axes is set to None, only one initial condition can be specified."
             )
 
-        return bm.array(
-            [initial_conditions[0][species] for species in self._get_species_order()]
-        )
+        return bm.asarray(y0_list)
 
     def _warmup_simulation(self, y0, parameters, saveat, in_axes):
         """Warms up the simulation to make use of jit compilation"""

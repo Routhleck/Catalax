@@ -9,6 +9,7 @@ import jax
 from jax import Array
 from jax.random import PRNGKey
 from numpyro.infer import MCMC, NUTS
+from brainunit import math as bm
 
 from catalax.model.parameter import Parameter
 
@@ -70,10 +71,10 @@ def run_mcmc(
         _print_priors(model.parameters.values())
 
     if isinstance(data, np.ndarray):
-        data = jnp.array(data)
+        data = bm.array(data)
 
     if len(data.shape) != 3:
-        data = jnp.expand_dims(data, -1)
+        data = bm.expand_dims(data, -1)
 
     # Assemble the initial conditions
     y0s = model._assemble_y0_array(initial_conditions, in_axes=in_axes)
@@ -154,7 +155,7 @@ def _setup_model(
     """
 
     # Set up the observables to extract from the simulation
-    observables = jnp.array(
+    observables = bm.array(
         [
             i
             for i, species in enumerate(model._get_species_order())
@@ -181,9 +182,7 @@ def _setup_model(
             sim_func (Callable): The simulation function of the model.
         """
 
-        theta = jnp.array(
-            [numpyro.sample(name, distribution) for name, distribution in priors]
-        )
+        theta = [numpyro.sample(name, distribution) for name, distribution in priors]
 
         states = sim_func(y0s, theta, times)
 

@@ -19,10 +19,10 @@ class Parameter(CatalaxBase):
     value: Optional[Union[float, Quantity]] = None
     constant: bool = False
     identifiability: Optional[Identifiability] = None
-    initial_value: Optional[float] = None
+    initial_value: Optional[Union[float, Quantity]] = None
     equation: Union[str, Expr, None] = None
-    lower_bound: Optional[float] = None
-    upper_bound: Optional[float] = None
+    lower_bound: Optional[Union[float, Quantity]] = None
+    upper_bound: Optional[Union[float, Quantity]] = None
     prior: Any = None  # TODO: Fix this typing
     _prior_str_: Optional[str] = None
 

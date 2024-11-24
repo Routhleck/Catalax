@@ -1,12 +1,16 @@
 from numpyro import distributions
-from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel, PrivateAttr
+from brainunit import Quantity
 
 
 class Prior(BaseModel):
     type: str
     _print_str: str = PrivateAttr(default="")
     _distribution_fun: Optional[distributions.Distribution] = PrivateAttr(default=None)
+
+    class Config:
+        arbitrary_types_allowed = True
 
     def __init__(self, **kwargs) -> None:
         super().__init__(type=self.__class__.__name__, **kwargs)
@@ -29,8 +33,8 @@ class Normal(Prior):
 class TruncatedNormal(Prior):
     mu: float
     sigma: float
-    low: float = 1e-6
-    high: float = 1e6
+    low: Union[float, Quantity] = 1e-6
+    high: Union[float, Quantity] = 1e6
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -54,8 +58,8 @@ class TruncatedNormal(Prior):
 
 
 class Uniform(Prior):
-    low: float
-    high: float
+    low: Union[float, Quantity]
+    high: Union[float, Quantity]
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

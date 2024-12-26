@@ -101,8 +101,8 @@ y0s = model._assemble_y0_array(initial_conditions, in_axes=(0, None, None))
 print(f"Time: {time.shape} | Data: {data.shape} | Initial Conditions: {y0s.shape}")
 
 # Define Priors
-model.parameters.v_max.prior = cmc.priors.Uniform(low=1e-6 * u.katal, high=200.0 * u.katal)
-model.parameters.K_m.prior = cmc.priors.Uniform(low=1e-6 * u.molar, high=1e3 * u.molar)
+model.parameters.v_max.prior = cmc.priors.Uniform(low=1e-6, high=200.0, unit=u.katal)
+model.parameters.K_m.prior = cmc.priors.Uniform(low=1e-6, high=1e3, unit=u.molar)
 # model.parameters.v_max.prior = cmc.priors.Uniform(low=1e-6, high=200.0)
 # model.parameters.K_m.prior = cmc.priors.Uniform(low=1e-6, high=1e3)
 

@@ -1,13 +1,14 @@
 from numpyro import distributions
 from typing import Optional, Union
 from pydantic import BaseModel, PrivateAttr
-from brainunit import Quantity
+from brainunit import Quantity, Unit, UNITLESS
 
 
 class Prior(BaseModel):
     type: str
     _print_str: str = PrivateAttr(default="")
     _distribution_fun: Optional[distributions.Distribution] = PrivateAttr(default=None)
+    unit: Unit = UNITLESS
 
     class Config:
         arbitrary_types_allowed = True

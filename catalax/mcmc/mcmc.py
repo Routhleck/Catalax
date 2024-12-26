@@ -9,6 +9,7 @@ import jax
 from jax import Array
 from jax.random import PRNGKey
 from numpyro.infer import MCMC, NUTS
+from brainunit import Quantity
 from brainunit import math as bm
 
 from catalax.model.parameter import Parameter
@@ -88,9 +89,10 @@ def run_mcmc(
 
     # Get all priors
     priors = [
-        (model.parameters[param].name, model.parameters[param].prior._distribution_fun)
+        (model.parameters[param].name, model.parameters[param].prior._distribution_fun, model.parameters[param].prior.unit)
         for param in model._get_parameter_order()
     ]
+
 
     if neuralode is not None:
         rate_fun = model._setup_rate_function(in_axes=(0, 0, None))
@@ -182,7 +184,7 @@ def _setup_model(
             sim_func (Callable): The simulation function of the model.
         """
 
-        theta = [numpyro.sample(name, distribution) for name, distribution in priors]
+        theta = [Quantity(numpyro.sample(name, distribution), unit=unit) for name, distribution, unit in priors]
 
         states = sim_func(y0s, theta, times)
 

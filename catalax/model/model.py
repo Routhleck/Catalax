@@ -239,6 +239,7 @@ class Model(CatalaxBase):
         in_axes: Optional[Tuple] = None,
         max_steps: int = 4096,
         sensitivity: Optional[InAxes] = None,
+        origin_solve=False,
     ):
         """
         Simulates a given model with the given initial conditions. The simulation can be
@@ -290,7 +291,7 @@ class Model(CatalaxBase):
         elif saveat is None:
             raise ValueError("Must specify either nsteps or saveat.")
 
-        if self._model_changed(in_axes, dt0, sensitivity) or self._sim_func is None:
+        if self._model_changed(in_axes, dt0, sensitivity) or self._sim_func is None or origin_solve is True:
             self._setup_system(
                 in_axes=in_axes,
                 t0=t0,
@@ -301,6 +302,7 @@ class Model(CatalaxBase):
                 atol=atol,
                 max_steps=max_steps,
                 sensitivity=sensitivity,
+                origin_solve=origin_solve,
             )
 
             # Set markers to check whether the conditions have changed
@@ -349,7 +351,7 @@ class Model(CatalaxBase):
 
         return False
 
-    def _setup_system(self, in_axes: Tuple = (0, None, None), mcmc_run=False, **kwargs):
+    def _setup_system(self, in_axes: Tuple = (0, None, None), origin_solve=False, **kwargs):
         """Converts given SymPy equations into Equinox modules, used for simulation.
 
         This method will prepare the simulation function, jit it and vmap it across
@@ -369,7 +371,7 @@ class Model(CatalaxBase):
             **kwargs,
         )
 
-        self._sim_func = simulation_setup._prepare_func(in_axes=in_axes, term=self.term, mcmc_run=mcmc_run)
+        self._sim_func = simulation_setup._prepare_func(in_axes=in_axes, term=self.term, origin_solve=origin_solve)
 
     def _get_parameters(self, parameters: Optional[jax.Array] = None) -> jax.Array:
         """Gets all the parameters for the model"""

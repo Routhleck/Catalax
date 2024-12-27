@@ -91,7 +91,7 @@ def run_mcmc(
         in_axes=in_axes,
         dt0=dt0,
         max_steps=max_steps,
-        mcmc_run=True,
+        origin_solve=True,
     )
 
     # Get all priors

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from numpyro.infer import MCMC
 from numpyro.diagnostics import hpdi
 import brainunit as u
-from brainunit import math as bm
+from brainunit import math as bm, Quantity
 
 from catalax.model.model import Model
 from catalax.neural.neuralbase import NeuralBase
@@ -241,12 +241,12 @@ def _get_quantile_preds(
 ) -> Tuple[jax.Array, jax.Array]:
     samples = mcmc.get_samples()
     hdpi_range = [
-        hpdi(mcmc.get_samples()[param], mass) for param in model._get_parameter_order()
+        Quantity(hpdi(mcmc.get_samples()[param], mass), model.parameters[param].value.unit) for param in model._get_parameter_order()
     ]
 
     # Construct upper and lower parameters
-    lower_quantile_params = bm.array([value[0] for value in hdpi_range])
-    upper_quantile_params = bm.array([value[1] for value in hdpi_range])
+    lower_quantile_params = [value[0] for value in hdpi_range]
+    upper_quantile_params = [value[1] for value in hdpi_range]
 
     lower_quantile_pred = _simulate_quantile(
         model,

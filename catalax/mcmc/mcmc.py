@@ -7,6 +7,7 @@ import numpyro.distributions as dist
 
 import jax
 from jax import Array
+from jax.interpreters.ad import JVPTracer
 from jax.random import PRNGKey
 from numpyro.infer import MCMC, NUTS
 from brainunit import Quantity
@@ -68,6 +69,11 @@ def run_mcmc(
         param.prior is not None for param in model.parameters.values()
     ), f"Parameters {', '.join([param.name for param in model.parameters.values() if param.prior is None])} do not have priors. Please specify priors for all parameters."
 
+    # check if all paramaters have same unit
+    assert all(
+        model.parameters[param].prior.unit == model.parameters[param].value.unit for param in model._get_parameter_order()
+    ), f"All parameters should have the same unit."
+
     if verbose:
         _print_priors(model.parameters.values())
 
@@ -85,11 +91,12 @@ def run_mcmc(
         in_axes=in_axes,
         dt0=dt0,
         max_steps=max_steps,
+        mcmc_run=True,
     )
 
     # Get all priors
     priors = [
-        (model.parameters[param].name, model.parameters[param].prior._distribution_fun, model.parameters[param].prior.unit)
+        (model.parameters[param].name, model.parameters[param].prior._distribution_fun)
         for param in model._get_parameter_order()
     ]
 
@@ -132,9 +139,9 @@ def run_mcmc(
 
     mcmc.run(
         PRNGKey(seed),
-        data=data,
-        y0s=y0s,
-        times=times,
+        data=data.mantissa if isinstance(data, Quantity) else data,
+        y0s=y0s.mantissa if isinstance(y0s, Quantity) else y0s,
+        times=times.mantissa if isinstance(times, Quantity) else times,
     )
 
     # Print a nice summary
@@ -183,8 +190,15 @@ def _setup_model(
             priors_scale (Array): The stdev of the priors.
             sim_func (Callable): The simulation function of the model.
         """
+        # theta = []
+        # for prior in priors:
+        #     name, distribution, unit = prior
+        #     value = numpyro.sample(name, distribution)
+        #     if isinstance(value, JVPTracer):
+        #         value = value.tangent
+        #     theta.append(Quantity(value, unit=unit))
 
-        theta = [Quantity(numpyro.sample(name, distribution), unit=unit) for name, distribution, unit in priors]
+        theta = [numpyro.sample(name, distribution) for name, distribution in priors]
 
         states = sim_func(y0s, theta, times)
 

@@ -115,8 +115,8 @@ mcmc, bayes_model = cmc.run_mcmc(
     initial_conditions=initial_conditions,
     times=time,
     yerrs=2.0,
-    num_warmup=1000,
-    num_samples=1000,
+    num_warmup=20,
+    num_samples=20,
     dt0=0.1 * u.second,
     max_steps=64**4
 )
@@ -126,6 +126,20 @@ for param, samples in mcmc.get_samples().items():
     if param not in model.parameters:
         continue
 
-    model.parameters[param].value = float(samples.mean())
+    model.parameters[param].value = float(samples.mean()) * model.parameters[param].prior.unit
 
 print(model.parameters)
+
+# # Visualize the result using a corner plot
+# # Shows the posterior distribution of the parameters
+# # Shows the correlation between the parameters
+# fig = cmc.plot_corner(mcmc, model=model)
+
+f = ctx.visualize(
+    model=model,
+    data=data[:4],
+    times=time[:4],
+    initial_conditions=initial_conditions[:4],
+    figsize=(4,2),
+    mcmc=mcmc
+)

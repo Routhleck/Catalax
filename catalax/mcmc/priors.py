@@ -28,7 +28,7 @@ class Normal(Prior):
         super().__init__(**kwargs)
 
         self._distribution_fun = distributions.Normal(self.mu, self.sigma)
-        self._print_str = f"N(μ={self.mu}, σ={self.sigma})"
+        self._print_str = f"N(μ={self.mu}, σ={self.sigma}, unit={self.unit})"
 
 
 class TruncatedNormal(Prior):
@@ -54,7 +54,7 @@ class TruncatedNormal(Prior):
             loc=self.mu, scale=self.sigma, low=self.low, high=self.high
         )
         self._print_str = (
-            f"N(μ={self.mu}, σ={self.sigma}, high={self.high} low={self.low})"
+            f"N(μ={self.mu}, σ={self.sigma}, high={self.high} low={self.low}, unit={self.unit})"
         )
 
 
@@ -66,4 +66,4 @@ class Uniform(Prior):
         super().__init__(**kwargs)
 
         self._distribution_fun = distributions.Uniform(self.low, self.high)
-        self._print_str = f"U(low={self.low}, high={self.high})"
+        self._print_str = f"U(low={self.low}, high={self.high}, unit={self.unit})"

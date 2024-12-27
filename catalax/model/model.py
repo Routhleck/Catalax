@@ -349,7 +349,7 @@ class Model(CatalaxBase):
 
         return False
 
-    def _setup_system(self, in_axes: Tuple = (0, None, None), **kwargs):
+    def _setup_system(self, in_axes: Tuple = (0, None, None), mcmc_run=False, **kwargs):
         """Converts given SymPy equations into Equinox modules, used for simulation.
 
         This method will prepare the simulation function, jit it and vmap it across
@@ -369,7 +369,7 @@ class Model(CatalaxBase):
             **kwargs,
         )
 
-        self._sim_func = simulation_setup._prepare_func(in_axes=in_axes, term=self.term)
+        self._sim_func = simulation_setup._prepare_func(in_axes=in_axes, term=self.term, mcmc_run=mcmc_run)
 
     def _get_parameters(self, parameters: Optional[jax.Array] = None) -> jax.Array:
         """Gets all the parameters for the model"""

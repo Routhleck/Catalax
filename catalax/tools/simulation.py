@@ -67,29 +67,43 @@ class Simulation(BaseModel):
 
     _simulation_func = PrivateAttr(default=None)
 
-    def _prepare_func(self, in_axes=None, term=None):
+    def _prepare_func(self, in_axes=None, term=None, mcmc_run=False):
         """Applies all the necessary transformations to the term and prepares the simulation function"""
 
-        if term is None:
-            f = Stack(parameters=self.parameters, odes=self.odes)
+        if term is None or mcmc_run:
+            stack = Stack(parameters=self.parameters, odes=self.odes)
+            def _simulate_system(y0, parameters, time):
+                sol = diffeqsolve(
+                    terms=ODETerm(stack),  # type: ignore
+                    solver=self.solver(),  # type: ignore
+                    t0=0,
+                    t1=time[-1],
+                    dt0=self.dt0.mantissa if isinstance(self.dt0, Quantity) else self.dt0,  # type: ignore
+                    y0=y0,
+                    args=parameters,  # type: ignore
+                    saveat=SaveAt(ts=time),  # type: ignore
+                    stepsize_controller=PIDController(rtol=self.rtol, atol=self.atol, step_ts=time),  # type: ignore
+                    max_steps=self.max_steps,
+                )
+
+                return sol.ys
         else:
             f = term
+            def _simulate_system(y0, parameters, time):
+                sol = diffeqsolve(
+                    terms=ODETerm(f),  # type: ignore
+                    solver=self.solver(),  # type: ignore
+                    t0=0 * u.second,
+                    t1=time[-1],
+                    dt0=self.dt0 if isinstance(self.dt0, Quantity) else Quantity(self.dt0, unit=u.second),  # type: ignore
+                    y0=y0,
+                    args=parameters,  # type: ignore
+                    saveat=SaveAt(ts=time),  # type: ignore
+                    stepsize_controller=PIDController(rtol=self.rtol, atol=self.atol, step_ts=time),  # type: ignore
+                    max_steps=self.max_steps,
+                )
 
-        def _simulate_system(y0, parameters, time):
-            sol = diffeqsolve(
-                terms=ODETerm(f),  # type: ignore
-                solver=self.solver(),  # type: ignore
-                t0=0 * u.second,
-                t1=time[-1],
-                dt0=self.dt0,  # type: ignore
-                y0=y0,
-                args=parameters,  # type: ignore
-                saveat=SaveAt(ts=time),  # type: ignore
-                stepsize_controller=PIDController(rtol=self.rtol, atol=self.atol, step_ts=time),  # type: ignore
-                max_steps=self.max_steps,
-            )
-
-            return sol.ys
+                return sol.ys
 
         if self.sensitivity is not None:
             assert isinstance(

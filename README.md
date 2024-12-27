@@ -32,7 +32,7 @@ import brainunit as u
 
 
 m# Initialize the model
-model = ctx.Model(name="Simple menten model")
+model = ctx.Model(name="Simple Menten model")
 
 def f(t, y, args):
     K_m, v_max  = args

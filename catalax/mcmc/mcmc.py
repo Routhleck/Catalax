@@ -71,8 +71,10 @@ def run_mcmc(
 
     # check if all paramaters have same unit
     assert all(
-        model.parameters[param].prior.unit == model.parameters[param].value.unit for param in model._get_parameter_order()
-    ), f"All parameters should have the same unit."
+        model.parameters[param].prior.unit
+        == model.parameters[param].value.unit
+        for param in model._get_parameter_order()
+    ), "All parameters should have the same unit."
 
     if verbose:
         _print_priors(model.parameters.values())

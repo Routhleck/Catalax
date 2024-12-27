@@ -644,21 +644,20 @@ class Model(CatalaxBase):
                     parameter.to_dict() for parameter in model_dict.parameters.values()
                 ],
             }
-        else:
-            parameters_dicts = []
-            for parameter in model_dict.parameters.values():
-                parameter_dict = parameter.to_dict()
-                parameter_dict['value'] = parameter_dict['value'].mantissa if isinstance(parameter_dict['value'], Quantity) else parameter_dict['value']
-                parameters_dicts.append(parameter_dict)
-            return {
-                "name": model_dict.name,
-                "species": [species.to_dict() for species in model_dict.species.values()],
-                "odes": [
-                    {**ode.to_dict(), "species": species}
-                    for species, ode in model_dict.odes.items()
-                ],
-                "parameters": parameters_dicts,
-            }
+        parameters_dicts = []
+        for parameter in model_dict.parameters.values():
+            parameter_dict = parameter.to_dict()
+            parameter_dict['value'] = parameter_dict['value'].mantissa if isinstance(parameter_dict['value'], Quantity) else parameter_dict['value']
+            parameters_dicts.append(parameter_dict)
+        return {
+            "name": model_dict.name,
+            "species": [species.to_dict() for species in model_dict.species.values()],
+            "odes": [
+                {**ode.to_dict(), "species": species}
+                for species, ode in model_dict.odes.items()
+            ],
+            "parameters": parameters_dicts,
+        }
 
     # ! Metrics
     def calculate_aic(

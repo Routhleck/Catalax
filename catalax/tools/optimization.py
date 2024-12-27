@@ -63,9 +63,10 @@ def optimize(
     # unitless
     new_y0s = []
     for y0s_dict in initial_conditions:
-        new_y0s_dict = {}
-        for key, value in y0s_dict.items():
-            new_y0s_dict[key] = value.mantissa if isinstance(value, Quantity) else value
+        new_y0s_dict = {
+            key: value.mantissa if isinstance(value, Quantity) else value
+            for key, value in y0s_dict.items()
+        }
         new_y0s.append(new_y0s_dict)
     data = data.mantissa if isinstance(data, Quantity) else data
 

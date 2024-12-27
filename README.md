@@ -85,7 +85,7 @@ time, data = model.simulate(
 # Add some noise for realism
 data = np.random.normal(data.to_decimal(u.katal), 1.0).clip(min=0) * u.katal
 
-# Turn intiial conditions into a matrix (Not yet part of the NeuralODE workflow)
+# Turn initial conditions into a matrix (Not yet part of the NeuralODE workflow)
 y0s = model._assemble_y0_array(initial_conditions, in_axes=(0, None, None))
 
 # Visualize the data

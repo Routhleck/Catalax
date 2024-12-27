@@ -27,8 +27,10 @@ def plot_corner(
         if param != "sigma":
             if isinstance(model.parameters[param].value, Quantity):
                 # setattr(data.posterior, param + f" ({model.parameters[param].value.unit})", data.posterior[param])
-                data.posterior[param + f" ({model.parameters[param].value.unit})"] = data.posterior[param]
-                var_names.append(param + f" ({model.parameters[param].value.unit})")
+                data.posterior[
+                    f"{param} ({model.parameters[param].value.unit})"
+                ] = data.posterior[param]
+                var_names.append(f"{param} ({model.parameters[param].value.unit})")
             else:
                 var_names.append(param)
 
@@ -118,8 +120,10 @@ def plot_trace(mcmc, model, **kwargs) -> None:
     var_names = []
     for keys in model._get_parameter_order():
         if isinstance(model.parameters[keys].value, Quantity):
-            inf_data.posterior[keys + f" ({model.parameters[keys].value.unit})"] = inf_data.posterior[keys]
-            var_names.append(keys + f" ({model.parameters[keys].value.unit})")
+            inf_data.posterior[
+                f"{keys} ({model.parameters[keys].value.unit})"
+            ] = inf_data.posterior[keys]
+            var_names.append(f"{keys} ({model.parameters[keys].value.unit})")
         else:
             var_names.append(keys)
 
@@ -137,8 +141,10 @@ def plot_forest(mcmc, model, **kwargs) -> None:
     var_names = []
     for keys in model._get_parameter_order():
         if isinstance(model.parameters[keys].value, Quantity):
-            inf_data.posterior[keys + f" ({model.parameters[keys].value.unit})"] = inf_data.posterior[keys]
-            var_names.append(keys + f" ({model.parameters[keys].value.unit})")
+            inf_data.posterior[
+                f"{keys} ({model.parameters[keys].value.unit})"
+            ] = inf_data.posterior[keys]
+            var_names.append(f"{keys} ({model.parameters[keys].value.unit})")
         else:
             var_names.append(keys)
     f = az.plot_forest(inf_data, var_names=model._get_parameter_order(), **kwargs)

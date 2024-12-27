@@ -96,8 +96,8 @@ def optimize(
 
     for name, parameter in result.params.items():  # type: ignore
         new_model.parameters[name].value = Quantity(parameter.value,
-                                                    unit=new_model.parameters[name].value.unit) if isinstance(
-            new_model.parameters[name].value, Quantity) else parameter.value
+                                                    unit=new_model.parameters[name].initial_value.unit) if isinstance(
+            new_model.parameters[name].initial_value, Quantity) else parameter.value
 
     return (
         result,

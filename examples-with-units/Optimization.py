@@ -76,8 +76,8 @@ f = ctx.visualize(
 )
 
 # In order to perform optimization, we need to add initial values.
-model.parameters.v_max.initial_value = 10.0 * u.katal
-model.parameters.K_m.initial_value = 120.0 * u.molar
+model.parameters.v_max.initial_value = 10. * u.katal
+model.parameters.K_m.initial_value = 120. * u.molar
 
 # ... and to make sure to be as realistic as possible.
 model.parameters.v_max.value = None
@@ -92,5 +92,12 @@ result, new_model = ctx.optimize(
     global_upper_bound=1e5,
     global_lower_bound=1e-6,
     method="bfgs",
-    max_steps=64**2,
+)
+
+f = ctx.visualize(
+    model=new_model,
+    data=data[:4],
+    times=time[:4],
+    initial_conditions=initial_conditions[:4],
+    figsize=(4,2),
 )
